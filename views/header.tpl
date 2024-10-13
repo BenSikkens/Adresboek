@@ -1,0 +1,8 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link href="/css/main.css" rel="stylesheet">
+    <meta charset="UTF-8">
+    <title>{{ Title }}</title>
+</head>
+<body>

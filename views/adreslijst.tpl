@@ -1,9 +1,5 @@
-<html>
-  <head>
-     <title>Adresboek</title>
-     <link href="/css/main.css" rel="stylesheet">
-  </head>
-  <body>
+%include('header.tpl', Title='Adressen')
+
       <h2>Adressenlijst</h2>
       <p>
       <ul style="list-style-type:none">
@@ -15,5 +11,5 @@
 	    %end
 	  </ul>
 	  </p>
-  </body>
-</html>
+
+%include('footer.tpl')

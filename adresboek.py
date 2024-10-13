@@ -1,6 +1,6 @@
 import sqlite3
 
-from bottle import route, run, template, static_file  # , request, debug
+from bottle import route, run, template, request, static_file  # , request, debug
 
 # ---------------------------------------------------------------------------------------------------
 # Structure of the Database (for referencing)
@@ -24,14 +24,20 @@ from bottle import route, run, template, static_file  # , request, debug
 # TABLE category_contact_mapping
 #       (contact_id INTEGER, cat_id INTEGER);
 
+# voor de css
 @route('/css/<filename>')
 def send_css(filename):
-    return static_file(filename, root='static/css')
+    return static_file(filename, root='views/static/css')
 
+# voor static files
+@route('/static/<filename>')
+def server_static(filename):
+    return static_file(filename, root='./views/static')
 
+# get alle adressen
 @route('/adressen')
-def todo_list():
-    conn = sqlite3.connect('adresboek.db')
+def get_adressen():
+    conn = sqlite3.connect('my.db')
     c = conn.cursor()
     c.execute("SELECT c.first_name, c.family_name_prefix, c.family_name, c.contact_id, "
               "a.straatnaam, a.huisnummer, a.postcode, a.plaatsnaam "
@@ -46,22 +52,22 @@ def todo_list():
         nawgegs = dict(id=row[3], voornaam=row[0], prefix=pfx, achternaam=row[2], straatnaam=row[4], huisnummer=row[5],
                        postcode=row[6], plaatsnaam=row[7])
         nawdata.append(nawgegs)
-    print nawdata
+    print(nawdata)
     c.close()
     output = template('adreslijst', nawdata=nawdata)
-    print data
+    print(data)
     return output
 
-
-@route('/getadres/<name:re:[a-zA-Z]+>')
+# get specifiek adres
+@route('/adres/<name:re:[a-zA-Z]+>')
 def get_address(name):
-    conn = sqlite3.connect('adresboek.db')
+    conn = sqlite3.connect('my.db')
     c = conn.cursor()
     name = name + '%'
-    c.execute("SELECT first_name, family_name_prefix, family_name, "
-              "straatnaam, huisnummer, postcode, plaatsnaam "
-              "FROM contacts JOIN adressen on contacts.adres_id = adressen.adres_id "
-              "WHERE first_name LIKE ?", (name,))
+    c.execute("SELECT c.first_name, c.family_name_prefix, c.family_name, c.contact_id, "
+              "a.straatnaam, a.huisnummer, a.postcode, a.plaatsnaam "
+              "FROM contacts c, adressen a WHERE a.adres_id = c.adres_id AND" 
+              " c.first_name LIKE ?", (name,))
     data = c.fetchall()
     nawdata = list()
     for row in data:
@@ -69,15 +75,40 @@ def get_address(name):
             pfx = ''
         else:
             pfx = row[1]
-        nawgegs = dict(voornaam=row[0], prefix=pfx, achternaam=row[2], straatnaam=row[3], huisnummer=row[4],
-                       postcode=row[5], plaatsnaam=row[6])
+        nawgegs = dict(id=row[3], voornaam=row[0], prefix=pfx, achternaam=row[2], straatnaam=row[4], huisnummer=row[5],
+                       postcode=row[6], plaatsnaam=row[7])
+        print("id={nawgegs.voornaam} ")
         nawdata.append(nawgegs)
-    print nawdata
+    print(nawdata)
     c.close()
     output = template('adreslijst', nawdata=nawdata)
-    print data
+    #output = template('index.tpl', name=name)
+    print(data)
     return output
 
+@route('/new/contact')
+def form():
+    return template('form')
+
+
+# Route to handle form submission and insert data into the database
+@route('/submit', method='POST')
+def submit():
+    first_name = request.forms.get('first_name')
+    family_name = request.forms.get('family_name')
+    family_name_prefix = request.forms.get('family_name_prefix')
+
+    family_name_prefix = family_name_prefix if family_name_prefix else None
+
+    if first_name and family_name :
+        conn = sqlite3.connect('my.db')
+        c = conn.cursor()
+        c.execute('INSERT INTO contacts (first_name, family_name, family_name_prefix) VALUES (? ? ?)', (first_name, family_name, family_name_prefix))
+        conn.commit()
+        conn.close()
+        return f"Inserted name: {first_name}"
+    else:
+        return "Name cannot be empty!"
 
 @route('/verhuizen/<>', method='GET')
 def verhuizen():
@@ -91,5 +122,10 @@ def verhuizen():
 @route('add_email/<>')
 def add_email():
     pass
+
+@route('/')
+def index():
+    name="Ben's adresboek"
+    return template('index.tpl', name=name)
 
 run(host='localhost', port=8080, debug=True, reloader=True)
