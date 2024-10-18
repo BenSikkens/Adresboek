@@ -22,11 +22,13 @@
 
 <h2>Enter your name:</h2>
 <form action="/submit" method="post">
-    Name: <input first_name="first_name" type="text" />
-    Name: <input family_name="family_name" type="text" />
-    Name: <input family_name_prefix="family_name_prefix" type="text" />
-    <input value="Submit" type="submit" />
+  <label for="first_name">First name:</label>
+  <input type="text" id="first_name" name="first_name"><br><br>
+  <label for="family_name">Last name:</label>
+  <input type="text" id="family_name" name="family_name"><br><br>
+  <label for="family_name_prefix">name prefix:</label>
+  <input type="text" id="family_name_prefix" name="family_name_prefix"><br><br>
+  <input type="submit" value="Submit">
 </form>
-
 
 %include('footer.tpl')

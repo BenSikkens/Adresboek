@@ -7,6 +7,14 @@ body {
   color: gray;
 }
 
+main {
+    display: grid;
+    grid-template-columns:33% 1fr;
+}
+
+.left {
+background-color: blue}
+
 h1 {
   font-family: Georgia, serif;
   font-size: 60px;
