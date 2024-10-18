@@ -24,19 +24,27 @@ from bottle import route, run, template, request, static_file  # , request, debu
 # TABLE category_contact_mapping
 #       (contact_id INTEGER, cat_id INTEGER);
 
+# vars voor de routes
+
+
+
+
 # voor de css
 @route('/css/<filename>')
 def send_css(filename):
+    print('getting css')
     return static_file(filename, root='views/static/css')
 
 # voor static files
 @route('/static/<filename>')
 def server_static(filename):
+    print(f'getting static file {filename}')
     return static_file(filename, root='./views/static')
 
 # get alle adressen
 @route('/adressen')
 def get_adressen():
+    print('get all addresses')
     conn = sqlite3.connect('my.db')
     c = conn.cursor()
     c.execute("SELECT c.first_name, c.family_name_prefix, c.family_name, c.contact_id, "
@@ -61,6 +69,7 @@ def get_adressen():
 # get specifiek adres
 @route('/adres/<name:re:[a-zA-Z]+>')
 def get_address(name):
+    print(f'get address of name starting with {name}')
     conn = sqlite3.connect('my.db')
     c = conn.cursor()
     name = name + '%'
@@ -88,24 +97,34 @@ def get_address(name):
 
 @route('/new/contact')
 def form():
+    print('enter form')
     return template('form')
 
 
 # Route to handle form submission and insert data into the database
 @route('/submit', method='POST')
 def submit():
+    print(f'submitting form with {request.forms.keys()}')
+
+Cert
     first_name = request.forms.get('first_name')
+    print(f'{first_name}')
     family_name = request.forms.get('family_name')
     family_name_prefix = request.forms.get('family_name_prefix')
 
-    family_name_prefix = family_name_prefix if family_name_prefix else None
 
+    print(f'{first_name} {family_name_prefix} {family_name} ')
     if first_name and family_name :
+        family_name_prefix = family_name_prefix if family_name_prefix else None
+
         conn = sqlite3.connect('my.db')
         c = conn.cursor()
-        c.execute('INSERT INTO contacts (first_name, family_name, family_name_prefix) VALUES (? ? ?)', (first_name, family_name, family_name_prefix))
+        c.execute('INSERT INTO contacts (first_name, family_name, family_name_prefix) VALUES (?, ?, ?)', (first_name, family_name, family_name_prefix))
+        c.close()
         conn.commit()
         conn.close()
+
+
         return f"Inserted name: {first_name}"
     else:
         return "Name cannot be empty!"
@@ -123,9 +142,11 @@ def verhuizen():
 def add_email():
     pass
 
+@route('/index')
 @route('/')
 def index():
     name="Ben's adresboek"
-    return template('index.tpl', name=name)
+    routes = ["/index", "/adressen", "/new/contact"]
+    return template('index.tpl', name=name, routes=routes)
 
 run(host='localhost', port=8080, debug=True, reloader=True)
