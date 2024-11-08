@@ -44,6 +44,8 @@ def server_static(filename):
 # get alle adressen
 @route('/adressen')
 def get_adressen():
+    name="Ben's adresboek"
+    routes = ["/index", "/adressen", "/new/contact"]
     print('get all addresses')
     conn = sqlite3.connect('my.db')
     c = conn.cursor()
@@ -62,7 +64,7 @@ def get_adressen():
         nawdata.append(nawgegs)
     print(nawdata)
     c.close()
-    output = template('adreslijst', nawdata=nawdata)
+    output = template('adreslijst', nawdata=nawdata, name=name, routes=routes)
     print(data)
     return output
 
@@ -98,7 +100,8 @@ def get_address(name):
 @route('/new/contact')
 def form():
     print('enter form')
-    return template('form')
+    routes = ["/index", "/adressen", "/new/contact"]
+    return template('form', routes=routes)
 
 
 # Route to handle form submission and insert data into the database
@@ -106,7 +109,6 @@ def form():
 def submit():
     print(f'submitting form with {request.forms.keys()}')
 
-Cert
     first_name = request.forms.get('first_name')
     print(f'{first_name}')
     family_name = request.forms.get('family_name')
@@ -149,4 +151,5 @@ def index():
     routes = ["/index", "/adressen", "/new/contact"]
     return template('index.tpl', name=name, routes=routes)
 
+routes = ["/index", "/adressen", "/new/contact"]
 run(host='localhost', port=8080, debug=True, reloader=True)
